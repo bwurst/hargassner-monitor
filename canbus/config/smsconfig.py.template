@@ -1,0 +1,21 @@
+# -* coding: utf-8 *-
+
+# Alarm-SMS über ASPSMS-Web-Gateway
+
+# SMS-Alarm aktivieren?
+enable = True
+
+# Maximal alle [x] Sekunden eine SMS senden
+mindelay = 3600 # 1 hour
+
+# ASPSMS-Zugangsdaten
+userkey = '...'
+password = '...'
+
+# Empfänger-Telefonnummer
+recipient = '0049171...'
+# Absender-Name (keine Nummer)
+sender = 'Heizung'
+
+# hier werden gesendete SMS gespeichert. Die dort vorhandenen Dateien werden benutzt um die zuletzt gesendete SMS zu bestimmen (siehe mindelay).
+sentfolder = '/home/pi/sms_sent'
