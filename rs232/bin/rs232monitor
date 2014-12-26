@@ -1,0 +1,22 @@
+#!/usr/bin/python
+# -* coding: utf-8 *-
+
+ser = serial.Serial(
+	port='/dev/ttyUSB0',
+	baudrate=19200,
+	parity=serial.PARITY_NONE,
+	stopbits=serial.STOPBITS_ONE,
+	bytesize=serial.EIGHTBITS,
+	timeout=1
+	)
+
+
+ser.open()
+
+while True:
+	try:
+		data = ser.readline()
+		print data
+	except 
+
+
