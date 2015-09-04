@@ -1,6 +1,49 @@
 #!/usr/bin/python
 # -* coding: utf-8 *-
 
+import sys, os
+import serial
+import io
+import subprocess
+import time
+import traceback
+
+mypath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.insert(0, mypath)
+
+from lib.parser import Parser
+
+logfile = '/home/pi/logs/rs232.log'
+pidfile = '/tmp/hargassner-rs232.pid'
+
+if os.path.exists(pidfile):
+  pid = open(pidfile, 'r').read().strip()
+  if os.path.exists('/proc/%s' % pid):
+    print 'lockfile exists and other process is running'
+    sys.exit(1)
+  else:
+    print 'removing stale PID file, previous execution failed!?'
+    os.unlink(pidfile)
+
+pidf = open(pidfile, 'w')
+pidf.write("%s" % os.getpid())
+pidf.close()
+
+
+
+flog = open(logfile, 'a')
+
+def log(s):
+	try:
+		t = unicode(s)
+		if not t.endswith('\n'):
+			t = t + '\n'
+		flog.write( t.encode('utf-8') )
+		flog.flush()
+	except:
+		traceback.print_tb()
+
+
 ser = serial.Serial(
 	port='/dev/ttyUSB0',
 	baudrate=19200,
@@ -10,13 +53,35 @@ ser = serial.Serial(
 	timeout=1
 	)
 
+sio = io.TextIOWrapper(io.BufferedRWPair(ser, ser), encoding='iso-8859-1')
 
-ser.open()
+rrd = False
+if len(sys.argv) > 1 and sys.argv[1] == '--rrd':
+	rrd = True
 
+lastlog = 0
+curtime = ''
 while True:
-	try:
-		data = ser.readline()
-		print data
-	except 
+	data = sio.readline().strip()
+	if data:
+		if data.startswith('tm '):
+			curtime = data
+		if data.startswith('z '):
+			log(data)
+			# Wenn ein event kommt, dann gleich die nächste Statuszeile loggen
+			lastlog = 0
+		if data.startswith('pm '):
+			if lastlog < time.time() - 60:
+				log(curtime)
+				log(data)
+				lastlog = time.time()
+			status = Parser(data)
+			if rrd: 
+				subprocess.call(['rrdtool', 'update', '/home/pi/logs/rrd/temperatur.rrd', 'N:%s:%s:%s:%s:%s' % (status.aussentemperatur, status.kesseltemperatur, status.puffer_oben, status.puffer_unten, status.kessel_soll)])
+			else:
+				for index in range(len(status.elements)):
+					print '%3i: %s' % (index, status.elements[index])
 
+log.close()
 
+os.unlink(pidfile)
