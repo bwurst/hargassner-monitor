@@ -7,12 +7,14 @@ import io
 import subprocess
 import time
 import traceback
+import json
 
 mypath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, mypath)
 
 from lib.parser import Parser
 
+statefile = '/home/pi/logs/rs232.state'
 logfile = '/home/pi/logs/rs232.log'
 pidfile = '/tmp/hargassner-rs232.pid'
 
@@ -81,6 +83,8 @@ while True:
 			else:
 				for index in range(len(status.elements)):
 					print '%3i: %s' % (index, status.elements[index])
+			with open(statefile, 'w') as statef:
+				json.dump(status.__dict__, statef)
 
 log.close()
 
