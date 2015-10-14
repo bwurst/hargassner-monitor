@@ -1,3 +1,4 @@
+#!/bin/bash
 RUNNING=1
 
 if [ -f /tmp/hargassner-rs232.pid ] ; then
