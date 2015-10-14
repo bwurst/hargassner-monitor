@@ -61,6 +61,7 @@ rrd = False
 if len(sys.argv) > 1 and sys.argv[1] == '--rrd':
 	rrd = True
 
+state_data = {'status': {}, 'loglines': []}
 lastlog = 0
 curtime = ''
 while True:
@@ -70,6 +71,9 @@ while True:
 			curtime = data
 		if data.startswith('z '):
 			log(data)
+			state_data['loglines'].insert(0, (time.time(), data))
+			if len(state_data['loglines']) > 5:
+				del state_data['loglines'][5]
 			# Wenn ein event kommt, dann gleich die nächste Statuszeile loggen
 			lastlog = 0
 		if data.startswith('pm '):
@@ -84,7 +88,8 @@ while True:
 				for index in range(len(status.elements)):
 					print '%3i: %s' % (index, status.elements[index])
 			with open(statefile, 'w') as statef:
-				json.dump(status.__dict__, statef)
+				state_data['status'] = status.__dict__
+				json.dump(state_data, statef)
 
 log.close()
 
