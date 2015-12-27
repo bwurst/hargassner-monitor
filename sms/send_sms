@@ -13,7 +13,7 @@ import credentials as cred
 
 userkey = cred.userkey
 password = cred.password
-originator = 'schokokeks'
+originator = 'Heizung'
 
 def die(error):
   global sent
