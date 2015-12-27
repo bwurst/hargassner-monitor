@@ -80,7 +80,7 @@ while True:
 			if len(state_data['loglines']) > 10:
 				del state_data['loglines'][10]
 			if 'Stoerung' in data and 'Stop:1' in data:
-				sms('Stoerung an der Heizung: %s' % data)w
+				sms('Stoerung an der Heizung: %s' % data)
 			# Wenn ein event kommt, dann gleich die nächste Statuszeile loggen
 			lastlog = 0
 		if data.startswith('pm '):
