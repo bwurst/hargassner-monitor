@@ -72,8 +72,8 @@ while True:
 		if data.startswith('z '):
 			log(data)
 			state_data['loglines'].insert(0, (time.time(), data))
-			if len(state_data['loglines']) > 5:
-				del state_data['loglines'][5]
+			if len(state_data['loglines']) > 10:
+				del state_data['loglines'][10]
 			# Wenn ein event kommt, dann gleich die nächste Statuszeile loggen
 			lastlog = 0
 		if data.startswith('pm '):
