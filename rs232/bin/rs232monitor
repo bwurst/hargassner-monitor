@@ -18,6 +18,7 @@ statefile = '/home/pi/logs/rs232.state'
 logfile = '/home/pi/logs/rs232.log'
 pidfile = '/tmp/hargassner-rs232.pid'
 
+
 if os.path.exists(pidfile):
   pid = open(pidfile, 'r').read().strip()
   if os.path.exists('/proc/%s' % pid):
@@ -32,7 +33,6 @@ pidf.write("%s" % os.getpid())
 pidf.close()
 
 
-
 flog = open(logfile, 'a')
 
 def log(s):
@@ -45,6 +45,11 @@ def log(s):
 	except:
 		traceback.print_tb()
 
+def sms(s):
+	dest = '+491719354145'
+	log('sending SMS to %s' % dest)
+	subprocess.call(['/home/pi/hargassner-monitor/sms/send_sms', dest, s])
+	log('finished sending SMS')
 
 ser = serial.Serial(
 	port='/dev/ttyUSB0',
@@ -74,6 +79,8 @@ while True:
 			state_data['loglines'].insert(0, (time.time(), data))
 			if len(state_data['loglines']) > 10:
 				del state_data['loglines'][10]
+			if 'Stoerung' in data and 'Stop:1' in data:
+				sms('Stoerung an der Heizung: %s' % data)w
 			# Wenn ein event kommt, dann gleich die nächste Statuszeile loggen
 			lastlog = 0
 		if data.startswith('pm '):
