@@ -48,6 +48,7 @@ def log(s):
 		traceback.print_tb()
 
 def sms(s):
+	global last_sms
 	if time.time() - last_sms < 3600:
 		# Einnmal pro Stunde reicht
 		log('Not sending SMS too frequently')
