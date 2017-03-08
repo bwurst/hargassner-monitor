@@ -18,6 +18,8 @@ statefile = '/home/pi/logs/rs232.state'
 logfile = '/home/pi/logs/rs232.log'
 pidfile = '/tmp/hargassner-rs232.pid'
 
+last_sms = time.time()
+
 
 if os.path.exists(pidfile):
   pid = open(pidfile, 'r').read().strip()
@@ -46,9 +48,14 @@ def log(s):
 		traceback.print_tb()
 
 def sms(s):
+	if time.time() - last_sms < 3600:
+		# Einnmal pro Stunde reicht
+		log('Not sending SMS too frequently')
+		return
 	dest = '+491719354145'
 	log('sending SMS to %s' % dest)
 	subprocess.call(['/home/pi/hargassner-monitor/sms/send_sms', dest, s])
+	last_sms = time.time()
 	log('finished sending SMS')
 
 ser = serial.Serial(
