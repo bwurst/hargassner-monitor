@@ -24,10 +24,10 @@ last_sms = time.time()
 if os.path.exists(pidfile):
   pid = open(pidfile, 'r').read().strip()
   if os.path.exists('/proc/%s' % pid):
-    print 'lockfile exists and other process is running'
+    print('lockfile exists and other process is running')
     sys.exit(1)
   else:
-    print 'removing stale PID file, previous execution failed!?'
+    print('removing stale PID file, previous execution failed!?')
     os.unlink(pidfile)
 
 pidf = open(pidfile, 'w')
@@ -39,13 +39,13 @@ flog = open(logfile, 'a')
 
 def log(s):
 	try:
-		t = unicode(s)
+		t = str(s)
 		if not t.endswith('\n'):
 			t = t + '\n'
-		flog.write( t.encode('utf-8') )
+		flog.write( t )
 		flog.flush()
-	except:
-		traceback.print_tb()
+	except Exception as e:
+		traceback.print_exception(e)
 
 def sms(s):
 	global last_sms
@@ -103,7 +103,7 @@ while True:
 				subprocess.call(['rrdtool', 'update', '/home/pi/logs/rrd/temperatur.rrd', 'N:%s:%s:%s:%s:%s' % (status.aussentemperatur, status.kesseltemperatur, status.puffer_oben, status.puffer_unten, status.kessel_soll)])
 			else:
 				for index in range(len(status.elements)):
-					print '%3i: %s' % (index, status.elements[index])
+					print('%3i: %s' % (index, status.elements[index]))
 			with open(statefile, 'w') as statef:
 				state_data['status'] = status.__dict__
 				json.dump(state_data, statef)
