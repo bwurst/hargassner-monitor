@@ -8,14 +8,16 @@ import subprocess
 import time
 import traceback
 import json
+import tempfile
+import shutil
 
 mypath = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(0, mypath)
 
 from lib.parser import Parser
 
-statefile = '/home/pi/logs/rs232.state'
-logfile = '/home/pi/logs/rs232.log'
+statefile = '/home/bernd/logs/rs232.state'
+logfile = '/home/bernd/logs/rs232.log'
 pidfile = '/tmp/hargassner-rs232.pid'
 
 last_sms = time.time()
@@ -55,7 +57,7 @@ def sms(s):
 		return
 	dest = '+491719354145'
 	log('sending SMS to %s' % dest)
-	subprocess.call(['/home/pi/hargassner-monitor/sms/send_sms', dest, s])
+	subprocess.call(['/home/bernd/hargassner-monitor/sms/send_sms', dest, s])
 	last_sms = time.time()
 	log('finished sending SMS')
 
@@ -70,9 +72,9 @@ ser = serial.Serial(
 
 sio = io.TextIOWrapper(io.BufferedRWPair(ser, ser), encoding='iso-8859-1')
 
-rrd = False
-if len(sys.argv) > 1 and sys.argv[1] == '--rrd':
-	rrd = True
+debug = False
+if len(sys.argv) > 1 and sys.argv[1] == '--debug':
+	debug = True
 
 state_data = {'status': {}, 'loglines': []}
 lastlog = 0
@@ -99,14 +101,14 @@ while True:
 				log(data)
 				lastlog = time.time()
 			status = Parser(data)
-			if rrd: 
-				subprocess.call(['rrdtool', 'update', '/home/pi/logs/rrd/temperatur.rrd', 'N:%s:%s:%s:%s:%s' % (status.aussentemperatur, status.kesseltemperatur, status.puffer_oben, status.puffer_unten, status.kessel_soll)])
-			else:
+			if debug: 
 				for index in range(len(status.elements)):
 					print('%3i: %s' % (index, status.elements[index]))
-			with open(statefile, 'w') as statef:
-				state_data['status'] = status.__dict__
-				json.dump(state_data, statef)
+			state_data['status'] = status.__dict__
+			with open(statefile+'.tmp', 'w') as fp:
+				json.dump(state_data, fp)
+				fp.close()
+				shutil.move(fp.name, statefile)
 
 log.close()
 
