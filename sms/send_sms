@@ -4,11 +4,11 @@ import socket, sys, os, datetime
 HOST = 'xml1.aspsms.com' 
 PORT = 5061 
 
-SENT='/home/pi/logs/sms_sent'
+SENT='/home/bernd/logs/sms_sent'
 
 sent = open(os.path.join(SENT, datetime.datetime.now().isoformat().replace(':', '-')), 'w')
 
-sys.path.insert(0, '/home/pi')
+sys.path.insert(0, '/home/bernd')
 import credentials as cred
 
 userkey = cred.userkey
