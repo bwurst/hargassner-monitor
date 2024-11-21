@@ -1,12 +1,10 @@
 #!/usr/bin/python
-import socket, sys, os, datetime
+import requests, sys, os, datetime, json
 
 HOST = 'xml1.aspsms.com' 
 PORT = 5061 
 
 SENT='/home/bernd/logs/sms_sent'
-
-sent = open(os.path.join(SENT, datetime.datetime.now().isoformat().replace(':', '-')), 'w')
 
 sys.path.insert(0, '/home/bernd')
 import credentials as cred
@@ -19,7 +17,7 @@ def die(error):
   global sent
   sent.write(error)
   sent.close()
-  print error
+  print(error)
   sys.exit(1)
 
 
@@ -46,36 +44,25 @@ if recipient[3:6] not in valid_prefixes:
 
 text = sys.argv[2]
 
+
 if len(text) > 160:
-  text = text[:160]
+    text = text[:160]
 
-text = text.replace('<', '&lt;').replace('>', '&gt;')
+# ASPSMS
+headers = {
+    'Accept': 'application/json',
+}
+url = 'https://json.aspsms.com/SendTextSMS'
+data = {
+    "UserName": cred.userkey,
+    "Password": cred.password,
+    "Originator": 'Heizung',
+    "Recipients": [recipient, ],
+    "MessageText": text,
+}
+with open(os.path.join(SENT, datetime.datetime.now().isoformat().replace(':', '-')), 'w') as sentfile:
+    sentfile.write(json.dumps(data, indent=2))
+    res = requests.post(url, headers=headers, json=data, timeout=100)
+    sentfile.write('\n\n')
+    sentfile.write(res.text)
 
-CONTENT="""<?xml version="1.0" encoding="UTF-8"?>
-<aspsms>
-  <Userkey>"""+str(userkey)+"""</Userkey>
-  <Password>"""+str(password)+"""</Password>
-  <Originator>"""+ str(originator) +"""</Originator>
-  <Recipient>
-    <PhoneNumber>"""+ str(recipient) +"""</PhoneNumber>
-  </Recipient>
-  <MessageData>"""+ str(text) +"""</MessageData>
-  <Action>SendTextSMS</Action>
-</aspsms>
-"""
-
-sent.write(CONTENT)
-
-length=len(CONTENT)
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((HOST, PORT))
-s.send("POST /xmlsvr.asp HTTP/1.0\r\n")
-s.send("Content-Type: text/xml\r\n")
-s.send("Content-Length: "+str(length)+"\r\n\r\n")
-s.send(CONTENT)
-datarecv=s.recv(1024)
-sent.write('''
-Reply Received: 
-'''+ str(datarecv))
-s.close()
-sent.close()
