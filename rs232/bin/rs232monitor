@@ -37,15 +37,13 @@ pidf.write("%s" % os.getpid())
 pidf.close()
 
 
-flog = open(logfile, 'a')
-
 def log(s):
 	try:
-		t = str(s)
-		if not t.endswith('\n'):
-			t = t + '\n'
-		flog.write( t )
-		flog.flush()
+		with open(logfile, 'a') as flog:
+			t = str(s)
+			if not t.endswith('\n'):
+				t = t + '\n'
+			flog.write( t )
 	except Exception as e:
 		traceback.print_exception(e)
 
