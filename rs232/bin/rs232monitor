@@ -20,7 +20,7 @@ statefile = '/home/bernd/logs/rs232.state'
 logfile = '/home/bernd/logs/rs232.log'
 pidfile = '/tmp/hargassner-rs232.pid'
 
-last_sms = time.time()
+last_sms = time.time() - 3600
 
 
 if os.path.exists(pidfile):
@@ -94,6 +94,7 @@ while True:
 			# Wenn ein event kommt, dann gleich die nächste Statuszeile loggen
 			lastlog = 0
 		if data.startswith('pm '):
+			# Regulär immer einmal pro Minute loggen
 			if lastlog < time.time() - 60:
 				log(curtime)
 				log(data)
@@ -102,12 +103,14 @@ while True:
 			if debug: 
 				for index in range(len(status.elements)):
 					print('%3i: %s' % (index, status.elements[index]))
+			if status.stoerung and status.stoerungsnummer > 0 and status.stoerungsnummer < 100:
+				# Kleine Störungsnummern sind fatale Fehler, Genauer Grenzwert nicht bekannt
+				sms('Störung an der Heizung: #%s' % (status.stoerungsnummer,))
+				# Die SMS-Funktion kümmert sich darum, dass maximal einmal pro Stunde eine SMS verschickt wird
 			state_data['status'] = status.__dict__
 			with open(statefile+'.tmp', 'w') as fp:
 				json.dump(state_data, fp)
 				fp.close()
 				shutil.move(fp.name, statefile)
-
-log.close()
 
 os.unlink(pidfile)

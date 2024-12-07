@@ -18,6 +18,9 @@ class Parser(object):
 		self.puffer_unten       = 0
 		self.kessel_soll        = 0
 		self.anforderung        = 0
+		self.stoerung           = False
+		self.stoerungsnummer	= 0
+		self.raumaustragung	= 0
 		try:
 			self.saugzuggeblaese    = e[1]
 			self.pufferladepumpe    = (e[2] == '1')
@@ -30,6 +33,9 @@ class Parser(object):
 			self.puffer_oben        = e[41]
 			self.puffer_unten       = e[42]
 			self.anforderung        = e[75]
+			self.stoerung 		= bool(int(e[100], 16) & 0x800) # Interpretiere als hex und verschneide mit 0x800
+			self.stoerungsnummer	= int(e[98]) # Stoerungsnummer
+			self.raumaustragung	= bool(int(e[99], 16) & 0x101)
 		except:
 			pass
 
